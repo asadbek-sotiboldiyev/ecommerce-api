@@ -15,4 +15,25 @@ class FavouritesController extends Controller
     {
         return auth()->user()->favourites()->paginate(20);
     }
+
+    public function store(Request $request)
+    {
+        auth()->user()->favourites()->attach($request->product_id);
+
+        return response()->json([
+            'success' => true
+        ]);
+    }
+
+    public function destroy($favourite_id)
+    {
+        if(auth()->user()->hasFavourite($favourite_id)){
+            auth()->user()->favourites()->detach($favourite_id);
+            return response()->json(['success' => true]);
+        }
+        return response()->json([
+            'success' => false,
+            'message' => 'Favourite does not exists'
+        ]);
+    }
 }
