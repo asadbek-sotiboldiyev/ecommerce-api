@@ -4,6 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @property string $comment
+ * @property int $delivery_method_id
+ * @property int $payment_type_id
+ * @property float $sum
+ * @property int $address_id
+ * @property array $products
+ */
 class StoreOrderRequest extends FormRequest
 {
     /**
@@ -24,7 +32,7 @@ class StoreOrderRequest extends FormRequest
         return [
             'delivery_method_id' => 'required|numeric',
             'payment_type_id' => 'required|numeric',
-            'products' => 'required|array:product_id,stock_id,quantity',
+            'products' => 'required',
             'products.*.product_id' => 'required|numeric',
             'products.*.quantity' => 'required|numeric',
             'products.*.stock_id' => 'nullable|numeric',

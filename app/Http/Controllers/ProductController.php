@@ -22,7 +22,6 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request)
     {
-        //
     }
 
     public function show($id)
