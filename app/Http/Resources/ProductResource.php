@@ -22,9 +22,10 @@ class ProductResource extends JsonResource
             'name' => $this->getTranslations('name'),
             'price' => $this->price,
             'description' => $this->getTranslations('description'),
-            'invetory' => StockResource::collection($this->stocks),
+            'invertory' => StockResource::collection($this->stocks),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'order_quantity' => $this->when(isset($this->quantity), $this->quantity)
         ];
     }
 }

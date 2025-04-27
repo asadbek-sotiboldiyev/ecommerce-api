@@ -8,6 +8,7 @@ use App\Http\Resources\OrderResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Stock;
 use App\Models\UserAddress;
 
 class OrderController extends Controller
@@ -41,24 +42,33 @@ class OrderController extends Controller
         $products = [];
         $address = UserAddress::find($request->address_id);
 
-        foreach ($request['products'] as $product) {
-            $prod = Product::with('stocks')->findOrFail($product['product_id']);
+        foreach ($request['products'] as $request_product) {
+            $product = Product::with('stocks')->findOrFail($request_product['product_id']);
+            $product->quantity = $request_product['quantity'];
+            $stock_id = $request_product['stock_id'];
 
-            if(
-                $prod->stocks()->find($product['stock_id']) and
-                $prod->stocks()->find($product['stock_id'])->quantity >= $product['quantity']
-            ){
-                $product_wih_stock = $prod->withStocks(1);
-                $sum += $prod->price * $product['quantity'];
-                $resource =  new ProductResource($product_wih_stock);
-                $products[] = $resource->resolve();
+            // FAIL
+            if(!$product->stocks()->find($stock_id)){
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => 'stock not found',
+                ]);
             }
+            if($product->stocks()->find($stock_id)->quantity < $request_product['quantity']){
+                return response()->json([
+                    'status' => 'fail',
+                    'message' => 'product not enogh',
+                ]);
+            }
+            // ORDER CREATE
+            $product_wih_stock = $product->withStocks($stock_id);
+            $resource = new ProductResource($product_wih_stock);
+            
+            $sum += $product->price * $request_product['quantity'];
+            $products[] = $resource->resolve();
         }
-        return response()->json($products);
 
-
-
-        auth()->user()->orders()->create([
+        $order = auth()->user()->orders()->create([
             'comment' => $request->comment,
             'delivery_method_id' => $request->delivery_method_id,
             'payment_type_id' => $request->payment_type_id,
@@ -66,6 +76,14 @@ class OrderController extends Controller
             'address' => $address,
             'products' => $products
         ]);
+        if($order){
+            foreach ($products as $product) {
+                $stock = Stock::find($product['invertory'][0]['id']);
+                $stock->quantity -= $product['order_quantity'];
+                $stock->save();
+            }
+        }
+
         return response()->json([
             'status' => 'success',
             'message' => 'Order created'
