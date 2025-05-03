@@ -47,24 +47,33 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function roles() : BelongsToMany
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
     }
 
-    public function favourites() : BelongsToMany {
+    public function favourites(): BelongsToMany
+    {
         return $this->belongsToMany(Product::class);
     }
 
-    public function hasFavourite($favourite_id){
+    public function hasFavourite($favourite_id)
+    {
         return $this->favourites()->where('product_id', $favourite_id)->exists();
     }
 
-    public function orders() : HasMany {
+    public function orders(): HasMany
+    {
         return $this->hasMany(Order::class);
     }
 
-    public function addresses() : HasMany {
+    public function addresses(): HasMany
+    {
         return $this->hasMany(UserAddress::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
     }
 }
