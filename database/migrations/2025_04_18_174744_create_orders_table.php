@@ -22,6 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('sum');
             $table->json('address')->nullable();
             $table->json('products');
+            $table->foreignId('status_id')->default(1)->constrained();
             $table->timestamps();
         });
     }
